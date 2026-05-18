@@ -17,4 +17,6 @@ jobs:
         run: pip install flet
 
       - name: Build APK avec Flet
-        run: flet build apk --no-interactive --android-permissions android.permission.ACCESS_FINE_LOCATION=True android.permission.ACCESS_COARSE_LOCATION=True android.permission.INTERNET=True
+        env:
+          FLET_NON_INTERACTIVE: true
+        run: flet build apk --android-permissions android.permission.ACCESS_FINE_LOCATION=True android.permission.ACCESS_COARSE_LOCATION=True android.permission.INTERNET=True
