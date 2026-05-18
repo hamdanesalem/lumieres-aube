@@ -278,10 +278,11 @@ def run_safe_app(page: ft.Page):
     def sync_hardware_gps(e):
         txt_location.value = "[ Recherche signal GPS... ]" if state["lang"] != "ARA" else "[ جاري البحث عن الإشارة... ]"
         page.update()
-
         try:
+            # Demande directe au système HONOR
+            loc = page.get_upload_url("test", 1) # Force l'initialisation des composants natifs
             loc = page.platform_location
-            if loc and loc.latitude and loc.longitude:
+            if loc and loc.latitude:
                 state.update({
                     "city": "Position GPS",
                     "country": f"({loc.latitude:.2f}N, {loc.longitude:.2f}E)",
@@ -293,6 +294,11 @@ def run_safe_app(page: ft.Page):
                 return
         except:
             pass
+        
+        # Secours automatique : Si HONOR bloque le capteur, on se base sur la météo d'Annaba directement
+        state.update({"city": "Annaba", "country": "Algérie", "lat": 36.905, "lon": 7.755})
+        save_state_to_file("Annaba", "Algérie", 36.905, 7.755)
+        update_ui()
 
         txt_location.value = f"{state['city']}, {state['country']} (GPS indisponible)"
         page.update()
@@ -394,4 +400,5 @@ def main(page: ft.Page):
 
 if __name__ == "__main__":
     ft.run(main)
+
 
