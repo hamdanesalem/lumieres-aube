@@ -279,21 +279,23 @@ def run_safe_app(page: ft.Page):
         txt_location.value = "[ Recherche signal GPS... ]" if state["lang"] != "ARA" else "[ جاري البحث عن الإشارة... ]"
         page.update()
         try:
-            # Demande directe au système HONOR
-            loc = page.get_upload_url("test", 1) # Force l'initialisation des composants natifs
-            loc = page.platform_location
-            if loc and loc.latitude:
-                state.update({
-                    "city": "Position GPS",
-                    "country": f"({loc.latitude:.2f}N, {loc.longitude:.2f}E)",
-                    "lat": float(loc.latitude),
-                    "lon": float(loc.longitude)
-                })
-                save_state_to_file(state["city"], state["country"], float(loc.latitude), float(loc.longitude))
-                update_ui()
-                return
+            permission = fg.FletGeolocator.request_permission()
+            if permission in ["always", "whileInUse"]:
+                loc = fg.FletGeolocator.get_current_position()
+                if loc:
+                    state.update({
+                        "city": "Position GPS",
+                        "country": f"({loc.latitude:.2f}N, {loc.longitude:.2f}E)",
+                        "lat": float(loc.latitude),
+                        "lon": float(loc.longitude)
+                    })
+                    save_state_to_file(state["city"], state["country"], float(loc.latitude), float(loc.longitude))
+                    update_ui()
+                    return
         except:
             pass
+        txt_location.value = f"{state['city']}, {state['country']} (GPS indisponible)"
+        page.update()
         
         # Secours automatique : Si HONOR bloque le capteur, on se base sur la météo d'Annaba directement
         state.update({"city": "Annaba", "country": "Algérie", "lat": 36.905, "lon": 7.755})
